@@ -36,7 +36,7 @@ public class HotelServiceImpl implements HotelService {
     @Transactional(readOnly = true)
     public List<HotelsAvailableResponse> getAllAvailableHotels() {
         List<Hotel> availableHotels = hotelRepository.findAllAvailable();
-        log.info("Fetched all available hotels successfully");
+        log.info("Fetched all available hotels from db successfully");
         return availableHotels.stream()
             .map(h -> modelMapper.map(h, HotelsAvailableResponse.class))
             .toList();
