@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class BookingController {
     private final BookingService bookingService;
 
-    @PostMapping("/hotelId")
+    @PostMapping("/{hotelId}")
     ResponseEntity<BookingResponse> bookRoom(
         @PathVariable Long hotelId, 
         @RequestBody @Valid BookingRequest bookingRequest, 
@@ -37,7 +37,7 @@ public class BookingController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @GetMapping("/bookingId")
+    @GetMapping("/{bookingId}")
     ResponseEntity<BookingResponse> getBooingById(
         @PathVariable Long bookingId,
         Authentication authentication
@@ -52,7 +52,7 @@ public class BookingController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @DeleteMapping("/bookingId")
+    @DeleteMapping("/{bookingId}")
     ResponseEntity<Void> deleteBookingById(
         @PathVariable Long bookingId,
         Authentication authentication

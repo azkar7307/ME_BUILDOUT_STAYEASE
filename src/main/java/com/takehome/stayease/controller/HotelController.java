@@ -14,9 +14,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -45,19 +45,19 @@ public class HotelController {
         return new ResponseEntity<>(availableResponse, HttpStatus.OK);
     }
 
-    @PatchMapping("/{hotelId}")
-    public ResponseEntity<UpdateHotelResponse> updateHotels(
-        @PathVariable Long hotelId,
+    @PutMapping("/{hotel_id}")
+    public ResponseEntity<UpdateHotelResponse> updateHotel(
+        @PathVariable("hotel_id") Long hotelId,
         @RequestBody @Valid UpdateHotelRequest updateRequest
     ) {
         log.info("Request received to update Hotel '{}'", hotelId);
-        UpdateHotelResponse updateResponse = hotelService.updateHotels(hotelId, updateRequest);
+        UpdateHotelResponse updateResponse = hotelService.updateHotel(hotelId, updateRequest);
         log.info("Hotel '{}' updated successfully", hotelId);
         return new ResponseEntity<>(updateResponse, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{hotelId}")
-    public ResponseEntity<Void> updateHotels(@PathVariable Long hotelId) {
+    @DeleteMapping("/{hotel_id}")
+    public ResponseEntity<Void> deleteHotel(@PathVariable("hotel_id") Long hotelId) {
         log.info("Request received to delete Hotel '{}'", hotelId);
         hotelService.deleteHotel(hotelId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
