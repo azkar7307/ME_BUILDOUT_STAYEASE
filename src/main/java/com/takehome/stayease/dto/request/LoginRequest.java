@@ -2,7 +2,7 @@ package com.takehome.stayease.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,11 +17,12 @@ public class LoginRequest {
     @Email(message = "Email must be valid")
     private String email;
     
+    // @Pattern(
+    //     regexp = "^(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=!_]).{8,}$",
+    //     message = "Password must be at least 8 characters long, contain one uppercase letter,"
+    //         + "one number, and one special character"
+    // )
     @NotBlank(message = "Password must not be empty")
-    @Pattern(
-        regexp = "^(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=!_]).{8,}$",
-        message = "Password must be at least 8 characters long, contain one uppercase letter,"
-            + "one number, and one special character"
-    )
+    @Size(min = 8, message = "Password must be 8 character long")
     private String password;
 }

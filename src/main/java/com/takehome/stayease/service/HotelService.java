@@ -12,7 +12,7 @@ public interface HotelService {
     
     List<HotelsAvailableResponse> getAllAvailableHotels();
 
-    UpdateHotelResponse updateHotels(Long id, UpdateHotelRequest updateRequest);
+    UpdateHotelResponse updateHotel(Long id, UpdateHotelRequest updateRequest);
 
     void deleteHotel(Long id);
 }

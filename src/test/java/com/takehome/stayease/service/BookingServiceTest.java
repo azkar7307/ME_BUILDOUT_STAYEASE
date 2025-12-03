@@ -47,7 +47,6 @@ public class BookingServiceTest {
     private Hotel hotel;
     private Booking booking;
     private BookingRequest bookingRequest;
-    private BookingResponse bookingResponse;
     
     @BeforeEach
     void setup() {
@@ -63,6 +62,8 @@ public class BookingServiceTest {
 
     @Test
     void bookRoom_Return_BookingResponse() {
+        // arrange
+        hotel.setAvailableRooms(10);
         // setup
         doNothing().when(validationService).validateBookingDates(any(BookingRequest.class));
         when(validationService.validateAndGetHotel(anyLong())).thenReturn(hotel);
@@ -72,7 +73,7 @@ public class BookingServiceTest {
             .thenReturn(booking);
         when(bookingRepository.save(any(Booking.class))).thenReturn(booking);
         when(modelMapper.map(any(Booking.class), eq(BookingResponse.class)))
-            .thenReturn(bookingResponse);
+            .thenReturn(new BookingResponse());
 
         // execute
         BookingResponse response = bookingService.bookRoom(1L, bookingRequest, user);
@@ -109,7 +110,7 @@ public class BookingServiceTest {
 
         doNothing().when(validationService).validateRoomAvailablity(any(Hotel.class));
 
-        doReturn(booking).when(modelMapper.map(any(BookingRequest.class), eq(Booking.class)));
+        doReturn(booking).when(modelMapper).map(any(BookingRequest.class), eq(Booking.class));
         
         doAnswer(invocation -> {
             Booking booking = invocation.getArgument(0);
@@ -154,7 +155,7 @@ public class BookingServiceTest {
         // setup
         when(validationService.validateUserAndBooking(anyLong(), anyLong())).thenReturn(booking);
         when(modelMapper.map(any(Booking.class), eq(BookingResponse.class)))
-            .thenReturn(bookingResponse);
+            .thenReturn(new BookingResponse());
 
         // execute 
         BookingResponse response = bookingService.getBookingById(1L, user);

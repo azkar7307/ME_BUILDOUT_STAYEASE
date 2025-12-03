@@ -37,7 +37,7 @@ public class Hotel {
 
     private String description; 
     
-    @Column(nullable = false)
+    // @Column(nullable = false)
     private Integer totalRooms;
     
     private Integer availableRooms;

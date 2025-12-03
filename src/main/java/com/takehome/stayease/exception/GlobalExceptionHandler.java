@@ -22,8 +22,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(
-            EntityNotFoundException ex,
-            WebRequest request
+        EntityNotFoundException ex,
+        WebRequest request
     ) {
         HttpStatus status = HttpStatus.NOT_FOUND;
         ErrorResponse errorResponse = buildErrorResponse(ex.getMessage(), status, request);
@@ -33,8 +33,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredential(
-            BadCredentialsException ex,
-            WebRequest request
+        BadCredentialsException ex,
+        WebRequest request
     ) {
         HttpStatus status = HttpStatus.NOT_FOUND;
         ErrorResponse errorResponse = buildErrorResponse(ex.getMessage(), status, request);
@@ -44,8 +44,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ErrorResponse> handleBadRequest(
-            BadRequestException ex,
-            WebRequest request
+        BadRequestException ex,
+        WebRequest request
     ) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
         ErrorResponse errorResponse = buildErrorResponse(ex.getMessage(), status, request);
@@ -56,14 +56,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(
-            MethodArgumentNotValidException ex,
-            WebRequest request
+        MethodArgumentNotValidException ex,
+        WebRequest request
     ) {
         String allErrorsMsg = ex.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
-                .collect(Collectors.joining("; "));
+            .getFieldErrors()
+            .stream()
+            .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
+            .collect(Collectors.joining("; "));
 
         HttpStatus status = HttpStatus.BAD_REQUEST;
         ErrorResponse errorResponse = buildErrorResponse(allErrorsMsg, status, request);
@@ -73,8 +73,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleInvalidJson(
-            HttpMessageNotReadableException ex,
-            WebRequest request
+        HttpMessageNotReadableException ex,
+        WebRequest request
     ) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
         String errorMsg = getErrorMessages(ex.getMostSpecificCause());
@@ -86,8 +86,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(
-            Exception ex,
-            WebRequest request
+        Exception ex,
+        WebRequest request
     ) {
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         ErrorResponse errorResponse = buildErrorResponse(ex.getMessage(), status, request);

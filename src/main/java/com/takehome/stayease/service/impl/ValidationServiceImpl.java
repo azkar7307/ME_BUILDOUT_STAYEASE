@@ -26,13 +26,14 @@ public class ValidationServiceImpl implements ValidationService {
     @Override
     @Transactional(readOnly = true)
     public void ValidateUserExistByEmail(String email) {
-        if (userRepository.existByEmail()) {
+        if (userRepository.existsByEmail(email)) {
             throw new BadRequestException("User with email '" + email + "' already exists");
         }
         
     }
 
     @Override
+    @Transactional(readOnly = true)
     public AppUser validateAndGetUserByEmail(String email) {
         AppUser user = userRepository.findByEmail(email).orElseThrow(
             () -> new EntityNotFoundException(email, "User")
@@ -41,6 +42,7 @@ public class ValidationServiceImpl implements ValidationService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Hotel validateAndGetHotel(Long id) {
         Hotel hotel = hotelRepository.findById(id).orElseThrow(
             () -> new EntityNotFoundException(id, "User")
@@ -66,9 +68,8 @@ public class ValidationServiceImpl implements ValidationService {
     @Override
     public void validateRoomAvailablity(Hotel hotel) {
         if (hotel.getAvailableRooms() < 1) {
-            throw new BadRequestException("The requested hotel '" 
-                + hotel.getId() 
-                + "' doesn't have available room"
+            throw new EntityNotFoundException("No rooms available in requested Hotel '" 
+                + hotel.getId() + "'"
             );
         }
     }
@@ -88,6 +89,7 @@ public class ValidationServiceImpl implements ValidationService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Booking validateAndGetBooking(Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(
             () -> new EntityNotFoundException(bookingId, "Booking")

@@ -1,7 +1,10 @@
 package com.takehome.stayease.controller;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -9,13 +12,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import java.io.IOException;
+import com.takehome.stayease.config.JWTAuthenticationFilter;
+import com.takehome.stayease.config.SecurityConfig;
 import com.takehome.stayease.dto.request.HotelRequest;
 import com.takehome.stayease.dto.request.UpdateHotelRequest;
 import com.takehome.stayease.dto.response.HotelResponse;
 import com.takehome.stayease.dto.response.UpdateHotelResponse;
-import com.takehome.stayease.service.HotelService;
+import com.takehome.stayease.service.impl.HotelServiceImpl;
+import com.takehome.stayease.service.impl.UserServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -23,6 +31,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -36,10 +45,23 @@ public class HetelControllerSecurityTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private HotelService hotelService;
+    private JWTAuthenticationFilter jwtAuthenticationFilter;
+    
+    @MockBean
+    private HotelServiceImpl hotelService;
 
-    // @MockBean
-    // private UserDetailsServiceImpl userDetailsService;  // mock dependency
+    @MockBean
+    private UserServiceImpl userService; // Required by SecurityConfig
+
+
+    @BeforeEach
+    void setup() throws ServletException, IOException {
+        doAnswer(invocation -> {
+            FilterChain chain = invocation.getArgument(2);
+            chain.doFilter(invocation.getArgument(0), invocation.getArgument(1));
+            return null;
+        }).when(jwtAuthenticationFilter).doFilter(any(), any(), any());
+    }
 
 
     // ********************************* ADD HOTEL ****************************************************
@@ -57,8 +79,9 @@ public class HetelControllerSecurityTest {
                 .content("""
                         {
                             "name": "Akash",
-                            "Location": "Pune",
+                            "location": "Pune",
                             "totalRooms": 10
+                        }
                         """)
         )
             .andExpect(status().isOk());
@@ -81,13 +104,14 @@ public class HetelControllerSecurityTest {
                 .content("""
                         {
                             "name": "",
-                            "Location": "Pune",
+                            "location": "Pune",
                             "totalRooms": 10
+                        }
                         """)
         )
-            .andExpect(status().isOk());
+            .andExpect(status().isBadRequest());
     
-        verify(hotelService, times(1)).addHotel(any(HotelRequest.class));
+        verify(hotelService, never()).addHotel(any(HotelRequest.class));
     }
 
 
@@ -105,13 +129,14 @@ public class HetelControllerSecurityTest {
                 .content("""
                         {
                             "name": "Sky Resort",
-                            "Location": null,
+                            "location": null,
                             "totalRooms": 10
+                        }
                         """)
         )
-            .andExpect(status().isOk());
+            .andExpect(status().isBadRequest());
     
-        verify(hotelService, times(1)).addHotel(any(HotelRequest.class));
+        verify(hotelService, never()).addHotel(any(HotelRequest.class));
     }
 
     @Test
@@ -125,8 +150,9 @@ public class HetelControllerSecurityTest {
                 .content("""
                         {
                             "name": "",
-                            "Location": "Pune",
+                            "location": "Pune",
                             "totalRooms": 10
+                        }
                         """)
         )
             .andExpect(status().isForbidden());
@@ -145,8 +171,9 @@ public class HetelControllerSecurityTest {
                 .content("""
                         {
                             "name": "",
-                            "Location": "Pune",
+                            "location": "Pune",
                             "totalRooms": 10
+                        }
                         """)
         )
             .andExpect(status().isForbidden());
@@ -156,7 +183,6 @@ public class HetelControllerSecurityTest {
     }
 
     @Test
-    @WithMockUser(roles = {"CUSTOMER"})
     void addHotel_With_Unauthenticated_User_Return_Unauthorized() throws Exception {
 
         mockMvc.perform(
@@ -164,9 +190,10 @@ public class HetelControllerSecurityTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                         {
-                            "name": "",
-                            "Location": "Pune",
+                            "name": "gggdgf",
+                            "location": "Pune",
                             "totalRooms": 10
+                        }
                         """)
         )
             .andExpect(status().isUnauthorized());
@@ -182,17 +209,18 @@ public class HetelControllerSecurityTest {
     void updateHotel_With_HOTEL_MANAGER_Role_Return_Forbidden() throws Exception {
 
         mockMvc.perform(
-            patch("/api/hotels/1")
+            put("/api/hotels/1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                         {
                             "name": "Sky Resort",
                             "availableRooms": 5
+                        }
                         """)
         )
             .andExpect(status().isForbidden());
     
-        verify(hotelService, never()).updateHotels(anyLong(), any(UpdateHotelRequest.class));
+        verify(hotelService, never()).updateHotel(anyLong(), any(UpdateHotelRequest.class));
     }
 
 
@@ -201,21 +229,22 @@ public class HetelControllerSecurityTest {
     void updateHotel_With_HOTEL_MANAGER_Role_Return_ok() throws Exception {
 
         UpdateHotelResponse response = new UpdateHotelResponse();
-        when(hotelService.updateHotels(anyLong(), any(UpdateHotelRequest.class)))
+        when(hotelService.updateHotel(anyLong(), any(UpdateHotelRequest.class)))
                .thenReturn(response);
 
         mockMvc.perform(
-            patch("/api/hotels/1")
+            put("/api/hotels/1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                         {
                             "name": "Sky Resort",
                             "availableRooms": 5
+                        }
                         """)
         )
             .andExpect(status().isOk());
     
-        verify(hotelService, times(1)).updateHotels(anyLong(), any(UpdateHotelRequest.class));
+        verify(hotelService, times(1)).updateHotel(anyLong(), any(UpdateHotelRequest.class));
     }
 
     @Test
@@ -223,34 +252,36 @@ public class HetelControllerSecurityTest {
     void updateHotel_With_HOTEL_CUSTOMER_Role_Return_Forbidden() throws Exception {
 
         mockMvc.perform(
-            patch("/api/hotels/1")
+            put("/api/hotels/1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                         {
                             "name": "Sky Resort",
                             "availableRooms": 5
+                        }
                         """)
         )
             .andExpect(status().isForbidden());
     
-        verify(hotelService, never()).updateHotels(anyLong(), any(UpdateHotelRequest.class));
+        verify(hotelService, never()).updateHotel(anyLong(), any(UpdateHotelRequest.class));
     }
 
     @Test
     void updateHotel_With_Unauthenticated_User_Return_Unauthorized() throws Exception {
 
         mockMvc.perform(
-            patch("/api/hotels")
+            put("/api/hotels")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                         {
                             "name": "Sky Resort",
                             "availableRooms": 5
+                        }
                         """)
         )
             .andExpect(status().isUnauthorized());
     
-        verify(hotelService, never()).updateHotels(anyLong(), any(UpdateHotelRequest.class));
+        verify(hotelService, never()).updateHotel(anyLong(), any(UpdateHotelRequest.class));
     }
 
 // ***************************** DELETE HOTEL ********************************* 
@@ -264,7 +295,7 @@ public class HetelControllerSecurityTest {
 
         mockMvc.perform(
             delete("/api/hotels/1"))
-            .andExpect(status().isOk());
+            .andExpect(status().isNoContent());
     
         verify(hotelService, times(1)).deleteHotel(anyLong());
     }
@@ -275,7 +306,7 @@ public class HetelControllerSecurityTest {
 
         mockMvc.perform(
             delete("/api/hotels/1"))
-            .andExpect(status().isOk());
+            .andExpect(status().isForbidden());
     
         verify(hotelService, never()).deleteHotel(anyLong());
     }
@@ -286,17 +317,16 @@ public class HetelControllerSecurityTest {
 
         mockMvc.perform(
             delete("/api/hotels/1"))
-            .andExpect(status().isOk());
+            .andExpect(status().isForbidden());
     
         verify(hotelService, never()).deleteHotel(anyLong());
     }
 
     @Test
-    @WithMockUser(roles = {"CUSTOMER"})
     void deleteHotel_With_Unauthenticated_User_Return_Unauthorized() throws Exception {
 
         mockMvc.perform(
-            delete("/api/hotels"))
+            delete("/api/hotels/1"))
             .andExpect(status().isUnauthorized());
     
         verify(hotelService, never()).deleteHotel(anyLong());

@@ -1,7 +1,6 @@
 package com.takehome.stayease.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,9 +16,8 @@ public class HotelRequest {
     
     @NotBlank(message = "Location is required")
     private String location;
+    
     private String description; 
-
-    @NotNull(message = "Number of rooms required")
     private Integer totalRooms;
     private Integer availableRooms;
 

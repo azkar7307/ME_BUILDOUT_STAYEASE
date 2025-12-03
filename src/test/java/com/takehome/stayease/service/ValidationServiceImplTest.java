@@ -12,6 +12,7 @@ import com.takehome.stayease.entity.AppUser;
 import com.takehome.stayease.entity.Booking;
 import com.takehome.stayease.entity.Hotel;
 import com.takehome.stayease.exception.BadRequestException;
+import com.takehome.stayease.exception.EntityNotFoundException;
 import com.takehome.stayease.repository.AppUserRepository;
 import com.takehome.stayease.repository.BookingRepository;
 import com.takehome.stayease.repository.HotelRepository;
@@ -112,7 +113,7 @@ public class ValidationServiceImplTest {
         hotel.setAvailableRooms(0);
 
         // assert and execute
-        assertThrows(BadRequestException.class,
+        assertThrows(EntityNotFoundException.class,
             () -> validationService.validateRoomAvailablity(hotel)
         );
     }

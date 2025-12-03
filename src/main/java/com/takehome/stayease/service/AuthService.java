@@ -9,6 +9,8 @@ import com.takehome.stayease.repository.AppUserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 public class AuthService {
     private final AppUserRepository userRepository;
     private final ValidationService validationService;
+    private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
     private final AuthenticationManager authenticationManager;
     private final JWTService jwtService;
@@ -23,20 +26,22 @@ public class AuthService {
     public AuthResponse registerUser(RegisterRequest registerRequest) {
         validationService.ValidateUserExistByEmail(registerRequest.getEmail());
         AppUser user = modelMapper.map(registerRequest, AppUser.class);
+        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         String jwtToken = jwtService.generateToken(user);
         userRepository.save(user);
-        return new AuthResponse(jwtToken);
+        return new AuthResponse(true, jwtToken);
     }
 
     public AuthResponse loginUser(LoginRequest loginRequest) {
-        AppUser user = validationService.validateAndGetUserByEmail(loginRequest.getEmail());
-        authenticationManager.authenticate(
+        // AppUser user = validationService.validateAndGetUserByEmail(loginRequest.getEmail());
+        Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
-                user.getEmail(), 
-                user.getPassword()
+                loginRequest.getEmail(), 
+                loginRequest.getPassword()
             )
         );
-        return new AuthResponse(jwtService.generateToken(user));
+        AppUser user = (AppUser) authentication.getPrincipal();
+        return new AuthResponse(true, jwtService.generateToken(user));
     }
 
     

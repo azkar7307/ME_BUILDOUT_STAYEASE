@@ -44,7 +44,7 @@ public class HotelServiceImpl implements HotelService {
 
     @Override
     @Transactional
-    public UpdateHotelResponse updateHotels(Long id, UpdateHotelRequest updateRequest) {
+    public UpdateHotelResponse updateHotel(Long id, UpdateHotelRequest updateRequest) {
         Hotel hotel = ValidationService.validateAndGetHotel(id);
         hotel.setName(updateRequest.getName());
         hotel.setAvailableRooms(updateRequest.getAvailableRooms());
