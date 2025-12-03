@@ -7,6 +7,7 @@ import com.takehome.stayease.dto.request.LoginRequest;
 import com.takehome.stayease.dto.request.RegisterRequest;
 import com.takehome.stayease.dto.response.AuthResponse;
 import com.takehome.stayease.service.AuthService;
+import com.takehome.stayease.util.Util;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,7 +28,7 @@ public class AuthController {
     ) {
         log.info(
             "Request received to register new user with email '{}'", 
-            registerRequest.getEmail()
+            Util.mask(registerRequest.getEmail())
         );
         return new ResponseEntity<>(
             authService.registerUser(registerRequest), 
@@ -37,7 +38,10 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> loginUser(@RequestBody @Valid LoginRequest loginRequest) {
-        log.info("Request received to login user with email {}", loginRequest.getEmail());
+        log.info(
+            "Request received to login user with email {}",
+            Util.mask(loginRequest.getEmail())
+        );
         return new ResponseEntity<>(
             authService.loginUser(loginRequest),
             HttpStatus.OK

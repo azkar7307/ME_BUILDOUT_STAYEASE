@@ -33,7 +33,6 @@ public class AuthService {
     }
 
     public AuthResponse loginUser(LoginRequest loginRequest) {
-        // AppUser user = validationService.validateAndGetUserByEmail(loginRequest.getEmail());
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
                 loginRequest.getEmail(), 

@@ -12,6 +12,7 @@ import com.takehome.stayease.repository.AppUserRepository;
 import com.takehome.stayease.repository.BookingRepository;
 import com.takehome.stayease.repository.HotelRepository;
 import com.takehome.stayease.service.ValidationService;
+import com.takehome.stayease.util.Util;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +28,11 @@ public class ValidationServiceImpl implements ValidationService {
     @Transactional(readOnly = true)
     public void ValidateUserExistByEmail(String email) {
         if (userRepository.existsByEmail(email)) {
-            throw new BadRequestException("User with email '" + email + "' already exists");
+            throw new BadRequestException(
+                "User with email '" 
+                    + Util.mask(email) 
+                    + "' already exists"
+            );
         }
         
     }
@@ -36,7 +41,7 @@ public class ValidationServiceImpl implements ValidationService {
     @Transactional(readOnly = true)
     public AppUser validateAndGetUserByEmail(String email) {
         AppUser user = userRepository.findByEmail(email).orElseThrow(
-            () -> new EntityNotFoundException(email, "User")
+            () -> new EntityNotFoundException(Util.mask(email), "User")
         );
         return user;
     }
