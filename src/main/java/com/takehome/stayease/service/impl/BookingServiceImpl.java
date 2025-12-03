@@ -28,9 +28,11 @@ public class BookingServiceImpl implements BookingService {
         validationService.validateBookingDates(bookingRequest);
         Hotel hotel = validationService.validateAndGetHotel(hotelId);
         validationService.validateRoomAvailablity(hotel);
+        
         Booking customerBooking = modelMapper.map(bookingRequest, Booking.class);
         customerBooking.setHotel(hotel);
         customerBooking.setUser(user);
+        hotel.setAvailableRooms(hotel.getAvailableRooms() - 1);
         Booking savedCustomerBooking = bookingRepository.save(customerBooking);
         log.info("Customer '{}' booked a romm in Hotel '{}'", hotelId, user.getId());
         return modelMapper.map(savedCustomerBooking, BookingResponse.class);
