@@ -1,10 +1,13 @@
 package com.takehome.stayease.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -56,11 +59,10 @@ public class BookingServiceTest {
         hotel = new Hotel();
         
         bookingRequest = new BookingRequest();
-        bookingResponse = new BookingResponse();
     }
 
     @Test
-    void bookRoomTest_Return_BookingResponse() {
+    void bookRoom_Return_BookingResponse() {
         // setup
         doNothing().when(validationService).validateBookingDates(any(BookingRequest.class));
         when(validationService.validateAndGetHotel(anyLong())).thenReturn(hotel);
@@ -77,6 +79,62 @@ public class BookingServiceTest {
 
         // assert
         assertNotNull(response);
+
+        // verify
+        verify(validationService, times(1)).validateBookingDates(any(BookingRequest.class));
+        verify(validationService, times(1)).validateAndGetHotel(anyLong());
+        verify(validationService, times(1)).validateRoomAvailablity(any(Hotel.class));
+
+        verify(modelMapper, times(1)).map(any(BookingRequest.class), eq(Booking.class));
+        verify(bookingRepository, times(1)).save(any(Booking.class));
+        verify(modelMapper, times(1)).map(any(Booking.class), eq(BookingResponse.class));
+    }
+
+    @Test
+    void bookRoom_Verify_RoomAvailablityCount_Return_BookingResponse() {
+        // arrange
+        Integer availableRooms = 5;
+        Long bookingId = 235L;
+        Long hotelId = 324L;
+
+        // setup
+        doNothing().when(validationService).validateBookingDates(any(BookingRequest.class));
+
+        doAnswer(invocation -> {
+            Long id = invocation.getArgument(0); 
+            hotel.setId(id);
+            hotel.setAvailableRooms(availableRooms);
+            return hotel;
+        }).when(validationService).validateAndGetHotel(anyLong());
+
+        doNothing().when(validationService).validateRoomAvailablity(any(Hotel.class));
+
+        doReturn(booking).when(modelMapper.map(any(BookingRequest.class), eq(Booking.class)));
+        
+        doAnswer(invocation -> {
+            Booking booking = invocation.getArgument(0);
+            booking.setId(bookingId);
+            return booking;
+        }).when(bookingRepository).save(any(Booking.class));
+        
+        doAnswer(invocation -> {
+            Booking booking = invocation.getArgument(0);
+            BookingResponse bookingResponse = new BookingResponse();
+            bookingResponse.setBookingId(booking.getId());
+            // bookingResponse.setHotelId(booking.getHotel().getId());
+            return bookingResponse;
+
+        }).when(modelMapper).map((any(Booking.class)), eq(BookingResponse.class));
+        
+        
+        // execute
+        BookingResponse response = bookingService.bookRoom(hotelId, bookingRequest, user);
+        
+        // assert
+        assertNotNull(response);
+        assertEquals(bookingId, response.getBookingId());
+        assertEquals(hotelId, hotel.getId());
+        assertEquals(availableRooms -1, hotel.getAvailableRooms());
 
         // verify
         verify(validationService, times(1)).validateBookingDates(any(BookingRequest.class));
