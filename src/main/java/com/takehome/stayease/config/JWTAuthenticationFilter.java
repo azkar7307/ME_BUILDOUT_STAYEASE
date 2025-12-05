@@ -33,12 +33,23 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter{
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String userName;
+        final String path = request.getRequestURI();
+        final String method = request.getMethod();
 
-        // Check authenticatin header
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
+            if (path.startsWith("/api/users")
+                || (path.startsWith("/api/hotels") && method.equals("GET"))
+            ) {
+                filterChain.doFilter(request, response);
+                return;
+            } else {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\": \"Authentication token required\"}");
+                return;
+            }
         }
+
         // Extract the token from the header
         jwt = authHeader.substring(7);
         // Extract the username from the token (username is the email)

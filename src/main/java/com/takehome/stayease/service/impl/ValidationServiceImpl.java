@@ -50,7 +50,7 @@ public class ValidationServiceImpl implements ValidationService {
     @Transactional(readOnly = true)
     public Hotel validateAndGetHotel(Long id) {
         Hotel hotel = hotelRepository.findById(id).orElseThrow(
-            () -> new EntityNotFoundException(id, "User")
+            () -> new EntityNotFoundException(id, "Hotel")
         );
         return hotel;
     }
