@@ -95,6 +95,8 @@ erDiagram
 
     BOOKING {
         Long id
+        Long user_id
+        long hotel_id
         LocalDate checkInDate
         LocalDate checkOutDate
     }
