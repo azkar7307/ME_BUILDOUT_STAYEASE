@@ -83,10 +83,8 @@ public class ValidationServiceImpl implements ValidationService {
     public Booking validateUserAndBooking(Long bookingId, Long userId) {
         Booking booking = validateAndGetBooking(bookingId);
         if (!booking.getUser().getId().equals(userId)) {
-            throw new BadRequestException("Customer '" 
-                + userId 
-                + " have not booked with Booking '" 
-                + bookingId
+            throw new BadRequestException("Customer '" + userId
+                + " have not booked with Booking '" + bookingId
                 + "'"
             );
         }
